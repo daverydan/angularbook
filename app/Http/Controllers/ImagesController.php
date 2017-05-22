@@ -62,7 +62,7 @@ class ImagesController extends Controller
 	    	'message' => $message,
 	    	'data' => $image,
 	    ], 201);
-	    
+
 	    return $response;
     }
 
@@ -74,7 +74,16 @@ class ImagesController extends Controller
      */
     public function show($id)
     {
-        //
+        $image = Image::find($id);
+
+        if (!$image) {
+        	return Response::json([
+				'error' => [
+					'message' => "Cannot find image."
+				]
+    		], 404);
+        }
+        return Response::json($image, 200);
     }
 
     /**
@@ -97,7 +106,38 @@ class ImagesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        if ((!$request->title) || (!$request->thumbnail) || (!$request->imageLink)) {
+	        $response = Response::json([
+	        	'message' => 'Please enter all required fields'
+	        ], 422);
+	        return $response;
+        }
+
+        $image = Image::find($request->id);
+
+        if(!$image){
+	        return Response::json([
+		        'error' => [
+		        	'message' => "Cannot find the image."
+		        ]
+	        ], 404);
+        }
+
+        $image->thumbnail = trim($request->thumbnail);
+        $image->imageLink = trim($request->imageLink);
+        $image->title = trim($request->title);
+        $image->description = trim($request->description);
+        
+        $image->save();
+
+        $message = 'Your image has been updated successfully';
+
+        $response = Response::json([
+	        'message' => $message,
+	        'data' => $image,
+        ], 201);
+		
+        return $response;
     }
 
     /**
